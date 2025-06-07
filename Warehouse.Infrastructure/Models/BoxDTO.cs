@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Warehouse.Infrastructure.Models
+﻿namespace Warehouse.Infrastructure.Models
 {
     public class BoxDTO
     {
         public int Id { get; set; }
+        public int? PalletId { get; set; }
         public double Width { get; set; }
         public double Height { get; set; }
         public double Depth { get; set; }

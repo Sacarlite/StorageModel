@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Warehouse.Domain.Models;
+﻿using Warehouse.Domain.Models;
 
 namespace Warehouse.Domain.Interfaces
 {

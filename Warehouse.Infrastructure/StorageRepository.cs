@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
 using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
 using Warehouse.Infrastructure.Models;
@@ -14,31 +9,40 @@ namespace Warehouse.Infrastructure
     public class StorageRepository : IStorageRepository
     {
         private readonly WarehouseDbContext _context;
-        private readonly IMapper _mapper;
 
-        public StorageRepository(WarehouseDbContext context, IMapper mapper)
+        public StorageRepository(WarehouseDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
-        public IEnumerable<Box> GetAllBoxes() =>
-            _context.Boxes.ProjectTo<Box>(_mapper.ConfigurationProvider).ToList();
+        public IEnumerable<Box> GetAllBoxes()
+        {
 
-        public IEnumerable<Pallet> GetAllPallets() =>
-            _context.Pallets.ProjectTo<Pallet>(_mapper.ConfigurationProvider).ToList();
+            return _context.Boxes.AsNoTracking().Adapt<List<Box>>();
+        }
+
+        public IEnumerable<Pallet> GetAllPallets()
+        {
+            return _context.Pallets
+                .AsNoTracking()
+                .Include(p => p.Boxes)
+                .Adapt<List<Pallet>>();
+        }
+
         public void AddBox(Box box)
         {
-            var dto = _mapper.Map<BoxDTO>(box);
+            var dto = box.Adapt<BoxDTO>();
             _context.Boxes.Add(dto);
             _context.SaveChanges();
+            box.Id = dto.Id;
         }
 
         public void AddPallet(Pallet pallet)
         {
-            var dto = _mapper.Map<PalletDTO>(pallet);
+            var dto = pallet.Adapt<PalletDTO>();
             _context.Pallets.Add(dto);
             _context.SaveChanges();
+            pallet.Id = dto.Id;
         }
     }
 }

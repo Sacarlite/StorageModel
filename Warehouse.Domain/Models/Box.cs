@@ -1,33 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Warehouse.Domain.Interfaces;
+﻿using Warehouse.Domain.Interfaces;
 
-namespace Warehouse.Model
+namespace Warehouse.Domain.Models
 {
-    public class Box : IStorageItem
+
+    public class Box : IStorageItem, IHasWeight, IHasExpirationDate
     {
         public int Id { get; set; }
         public double Width { get; set; }
         public double Height { get; set; }
         public double Depth { get; set; }
         public double Weight { get; set; }
-
+        public int? PalletId { get; set; }
         public DateTime? ProductionDate { get; set; }
         public DateTime? ExpirationDateOverride { get; set; }
 
-        public DateTime ExpirationDate
+        public ExpirationDateResult ExpirationDate
         {
             get
             {
                 if (ExpirationDateOverride.HasValue)
                 {
-                    return ExpirationDateOverride.Value.Date;
+                    return ExpirationDateResult.FromDate(ExpirationDateOverride.Value);
                 }
                 if (ProductionDate.HasValue)
                 {
-                    return ProductionDate.Value.Date.AddDays(100);
+                    return ExpirationDateResult.FromDate(ProductionDate.Value.AddDays(100));
                 }
                 throw new InvalidOperationException("Не указана дата производства или срок годности.");
             }
@@ -36,4 +33,5 @@ namespace Warehouse.Model
         public double Volume => Width * Height * Depth;
 
     }
+
 }

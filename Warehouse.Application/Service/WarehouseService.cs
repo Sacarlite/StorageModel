@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Warehouse.Domain.Interfaces;
+﻿using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
-using Warehouse.Infrastructure.Models;
 
 namespace Warehouse.Application.Service
 {
-    public class WarehouseService : IWarehouseService
+    public class WarehouseService : IStorageService
     {
         private readonly IStorageRepository _repository;
 
@@ -22,18 +15,19 @@ namespace Warehouse.Application.Service
         public IEnumerable<Pallet> GetSortedPalletsByExpiration()
         {
             return _repository.GetAllPallets()
-                .GroupBy(p => p.ExpirationDate)
-                .OrderBy(g => g.Key)
-                .SelectMany(g => g.OrderBy(p => p.Weight)); 
+                .GroupBy(p => p.ExpirationDate.HasValue ? p.ExpirationDate.Date : null)
+                .OrderBy(g => g.Key ?? DateTime.MaxValue)
+                .SelectMany(g => g.OrderBy(p => p.Weight));
         }
 
         public IEnumerable<Pallet> GetTop3LongestLastingPallets()
         {
             return _repository.GetAllPallets()
-                .Where(p => p.Boxes.Count > 0) 
-                .OrderByDescending(p => p.ExpirationDate) 
-                .Take(3) 
+                .Where(p => p.Items.Any())
+                .OrderByDescending(p => p.ExpirationDate.Date)
+                .Take(3)
                 .OrderBy(p => p.Volume);
         }
     }
+
 }

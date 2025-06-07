@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.Domain", "Warehouse.Domain\Warehouse.Domain.csproj", "{3A7920FA-1303-43AE-BA8A-3010028970F7}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.Application", "Warehouse.Application\Warehouse.Application.csproj", "{3466A139-327D-4A9C-AB66-A51D6CEAB879}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.Presentation", "Warehouse.Presentation\Warehouse.Presentation.csproj", "{3541BA83-4286-47CC-9512-36BA1F51A583}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.Test", "Warehouse.Test\Warehouse.Test.csproj", "{7AB8D59D-F02C-4D96-9EB0-F1477105C17E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{3541BA83-4286-47CC-9512-36BA1F51A583}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3541BA83-4286-47CC-9512-36BA1F51A583}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3541BA83-4286-47CC-9512-36BA1F51A583}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AB8D59D-F02C-4D96-9EB0-F1477105C17E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AB8D59D-F02C-4D96-9EB0-F1477105C17E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AB8D59D-F02C-4D96-9EB0-F1477105C17E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AB8D59D-F02C-4D96-9EB0-F1477105C17E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
