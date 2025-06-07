@@ -1,5 +1,7 @@
 ﻿using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
+using Warehouse.Presentation.Enums;
+using Warehouse.Presentation.UserCases;
 
 namespace Warehouse.Presentation
 {
@@ -7,11 +9,15 @@ namespace Warehouse.Presentation
     {
         private readonly IStorageService _storageService;
         private readonly IStorageRepository _storageRepository;
+        private readonly PalletMenu _palletMenu;
+        private readonly DataGeneratorMenu _dataGeneratorMenu;
 
         public ConsoleMenu(IStorageService storageService, IStorageRepository storageRepository)
         {
             _storageService = storageService;
             _storageRepository = storageRepository;
+            _palletMenu = new PalletMenu(storageService, storageRepository);
+            _dataGeneratorMenu = new DataGeneratorMenu(storageService, storageRepository);
         }
 
         public void Show()
@@ -29,49 +35,32 @@ namespace Warehouse.Presentation
                 }
                 else
                 {
-                    Console.WriteLine("Список паллет (сгруппированы по сроку годности, отсортированы по весу):");
-                    foreach (var pallet in pallets)
-                    {
-                        Console.WriteLine(
-                            $"ID: {pallet.Id}, Коробок: {pallet.Items.Count}, Срок: {pallet.ExpirationDate}, Вес: {pallet.Weight:F2} кг");
-                    }
-
-                    Console.WriteLine("\nТоп-3 паллеты с наибольшим сроком годности (отсортированы по объему):");
-                    var topPallets = _storageService.GetTop3LongestLastingPallets().ToList();
-                    foreach (var pallet in topPallets)
-                    {
-                        Console.WriteLine(
-                            $"ID: {pallet.Id}, Коробок: {pallet.Items.Count}, Срок: {pallet.ExpirationDate}, Объем: {pallet.Volume:F2}");
-                    }
+                    PrintPallets(pallets);
+                    PrintTop3Pallets(pallets);
                 }
 
-                Console.WriteLine("\nМеню:");
-                Console.WriteLine("1. Добавить новую паллету");
-                Console.WriteLine("2. Выбрать паллету");
-                Console.WriteLine("3. Выйти");
+                PrintMainMenu();
+                var choice = ReadMainMenuOption();
 
-                Console.Write("\nВведите номер действия: ");
-                var input = Console.ReadLine();
-
-                switch (input)
+                switch (choice)
                 {
-                    case "1":
+                    case MainMenuOption.AddPallet:
                         AddPallet();
                         break;
-
-                    case "2":
+                    case MainMenuOption.SelectPallet:
                         if (_storageRepository.GetAllPallets().Any())
-                            ViewPalletMenu();
+                            _palletMenu.ShowPalletMenu();
                         else
                             Console.WriteLine("Нет паллет для выбора.");
                         break;
-
-                    case "3":
+                    case MainMenuOption.GenerateRandomData:
+                        _dataGeneratorMenu.ShowDataGeneratorMenu();
+                        break;
+                    case MainMenuOption.Exit:
                         Console.WriteLine("Выход...");
                         return;
-
                     default:
-                        Console.WriteLine("Неверный ввод.");
+                        Console.WriteLine("Неверный выбор.");
                         break;
                 }
 
@@ -88,14 +77,9 @@ namespace Warehouse.Presentation
             var pallet = new Pallet();
             try
             {
-                Console.Write("Ширина: ");
-                pallet.Width = double.Parse(Console.ReadLine());
-
-                Console.Write("Высота: ");
-                pallet.Height = double.Parse(Console.ReadLine());
-
-                Console.Write("Глубина: ");
-                pallet.Depth = double.Parse(Console.ReadLine());
+                pallet.Width = ReadPositiveDouble("Ширина (см): ");
+                pallet.Height = ReadPositiveDouble("Высота (см): ");
+                pallet.Depth = ReadPositiveDouble("Глубина (см): ");
 
                 _storageRepository.AddPallet(pallet);
                 Console.WriteLine($"Паллета добавлена с ID: {pallet.Id}.");
@@ -106,124 +90,66 @@ namespace Warehouse.Presentation
             }
         }
 
-        private void ViewPalletMenu()
+        private void PrintPallets(List<Pallet> pallets)
         {
-            var pallets = _storageRepository.GetAllPallets().ToList();
-            Console.Clear();
-            Console.WriteLine("___ Выберите паллету ___\n");
-
-            for (int i = 0; i < pallets.Count; i++)
+            Console.WriteLine("Список паллет (сгруппированы по сроку годности, отсортированы по весу):");
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+            Console.WriteLine("| ID | Коробок | Срок годности | Ширина (см) | Глубина (см) | Вес (кг) | Объем (см^3) |");
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+            foreach (var pallet in pallets)
             {
-                var pallet = pallets[i];
                 Console.WriteLine(
-                    $"{i + 1}. ID: {pallet.Id}, Коробок: {pallet.Items.Count}, Срок: {pallet.ExpirationDate}");
+                    $"| {pallet.Id,-2} | {pallet.Items.Count,-7} | {pallet.ExpirationDate.Date?.ToString("yyyy-MM-dd"),-13} | {pallet.Width,-11:F2} | {pallet.Depth,-12:F2} | {pallet.Weight,-8:F2} | {pallet.Volume,-11:F2} |");
             }
-
-            Console.Write("\nВведите номер паллеты: ");
-            if (int.TryParse(Console.ReadLine(), out var index) && index > 0 && index <= pallets.Count)
-            {
-                var selectedPallet = pallets[index - 1];
-                ShowPalletDetails(selectedPallet);
-            }
-            else
-            {
-                Console.WriteLine("Неверный номер.");
-            }
+            Console.WriteLine("-----------------------------------------------------------------------------------");
         }
 
-        private void ShowPalletDetails(Pallet pallet)
+        private void PrintTop3Pallets(List<Pallet> pallets)
+        {
+            Console.WriteLine("\nТоп-3 паллеты с наибольшим сроком годности (отсортированы по объему):");
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+            Console.WriteLine("| ID | Коробок | Срок годности | Ширина (см) | Глубина (см) | Вес (кг) | Объем (см³) |");
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+            var topPallets = _storageService.GetTop3LongestLastingPallets().ToList();
+            foreach (var pallet in topPallets)
+            {
+                Console.WriteLine(
+                    $"| {pallet.Id,-2} | {pallet.Items.Count,-7} | {pallet.ExpirationDate.Date?.ToString("yyyy-MM-dd"),-13} | {pallet.Width,-11:F2} | {pallet.Depth,-12:F2} | {pallet.Weight,-8:F2} | {pallet.Volume,-11:F2} |");
+            }
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+        }
+
+        private void PrintMainMenu()
+        {
+            Console.WriteLine("\nМеню:");
+            Console.WriteLine($"{(int)MainMenuOption.AddPallet}. Добавить новую паллету");
+            Console.WriteLine($"{(int)MainMenuOption.SelectPallet}. Выбрать паллету");
+            Console.WriteLine($"{(int)MainMenuOption.GenerateRandomData}. Сгенерировать случайные данные");
+            Console.WriteLine($"{(int)MainMenuOption.Exit}. Выйти");
+        }
+
+        private MainMenuOption ReadMainMenuOption()
+        {
+            Console.Write("\nВведите номер действия: ");
+            if (int.TryParse(Console.ReadLine(), out int input) && Enum.IsDefined(typeof(MainMenuOption), input))
+            {
+                return (MainMenuOption)input;
+            }
+            return MainMenuOption.None;
+        }
+
+        private double ReadPositiveDouble(string prompt)
         {
             while (true)
             {
-                Console.Clear();
-                Console.WriteLine($"___ Паллета {pallet.Id} ___\n");
-
-                Console.WriteLine($"Коробок: {pallet.Items.Count}");
-                Console.WriteLine($"Срок годности: {pallet.ExpirationDate}");
-                Console.WriteLine($"Вес: {pallet.Weight:F2} кг");
-                Console.WriteLine($"Объем: {pallet.Volume:F2}\n");
-
-                if (!pallet.Items.Any())
+                Console.Write(prompt);
+                if (double.TryParse(Console.ReadLine(), out double value) && value > 0)
                 {
-                    Console.WriteLine("Паллета пуста.");
+                    return value;
                 }
-                else
-                {
-                    Console.WriteLine("Коробки на паллете:");
-                    foreach (var box in pallet.Items.Cast<Box>())
-                    {
-                        Console.WriteLine(
-                            $"ID: {box.Id}, Срок: {box.ExpirationDate}, Вес: {box.Weight:F2} кг");
-                    }
-                }
-
-                Console.WriteLine("\nМеню:");
-                Console.WriteLine("1. Добавить коробку");
-                Console.WriteLine("2. Назад");
-
-                var choice = Console.ReadLine();
-                if (choice == "1")
-                    AddBoxToPallet(pallet);
-                else if (choice == "2")
-                    return;
-                else
-                    Console.WriteLine("Неверный выбор.");
-
-                Console.WriteLine("\nНажмите любую клавишу для продолжения...");
-                Console.ReadKey();
+                Console.WriteLine("Введите положительное число.");
             }
         }
 
-        private void AddBoxToPallet(Pallet pallet)
-        {
-            Console.Clear();
-            Console.WriteLine("___ Добавление коробки ___");
-
-            var box = new Box();
-            try
-            {
-                Console.Write("Ширина: ");
-                box.Width = double.Parse(Console.ReadLine());
-
-                Console.Write("Высота: ");
-                box.Height = double.Parse(Console.ReadLine());
-
-                Console.Write("Глубина: ");
-                box.Depth = double.Parse(Console.ReadLine());
-
-                Console.Write("Вес: ");
-                box.Weight = double.Parse(Console.ReadLine());
-
-                Console.Write("Дата производства (введите дату или нажмите Enter для указания срока годности): ");
-                var productionDateInput = Console.ReadLine();
-
-                if (DateTime.TryParse(productionDateInput, out var productionDate))
-                {
-                    box.ProductionDate = productionDate;
-                }
-                else
-                {
-                    Console.Write("Срок годности: ");
-                    var expirationDateInput = Console.ReadLine();
-                    if (DateTime.TryParse(expirationDateInput, out var expirationDate))
-                    {
-                        box.ExpirationDateOverride = expirationDate;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Неверный формат даты.");
-                        return;
-                    }
-                }
-
-                pallet.AddItem(box);
-                _storageRepository.AddBox(box);
-                Console.WriteLine($"Коробка добавлена на паллету с ID: {box.Id}.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка: {ex.Message}");
-            }
-        }
     }
 }

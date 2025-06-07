@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Mappings;
 using Warehouse.Application.Service;
 using Warehouse.Domain.Interfaces;
-using Warehouse.Infrastructure;
 using Warehouse.Infrastructure.Models;
+using Warehouse.Infrastructure.Repositories;
 using Warehouse.Presentation;
 class Program
 {
@@ -25,7 +25,7 @@ class Program
         using (var scope = serviceProvider.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
-            //   context.Database.EnsureDeleted();
+            context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
         }
         var menu = serviceProvider.GetRequiredService<ConsoleMenu>();

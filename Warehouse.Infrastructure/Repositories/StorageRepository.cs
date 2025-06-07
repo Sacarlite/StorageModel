@@ -4,7 +4,7 @@ using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
 using Warehouse.Infrastructure.Models;
 
-namespace Warehouse.Infrastructure
+namespace Warehouse.Infrastructure.Repositories
 {
     public class StorageRepository : IStorageRepository
     {
