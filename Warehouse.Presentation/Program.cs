@@ -27,7 +27,6 @@ class Program
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
-                context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
             }
 
