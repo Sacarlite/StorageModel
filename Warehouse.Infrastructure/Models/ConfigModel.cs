@@ -18,6 +18,9 @@ namespace Warehouse.Infrastructure.Models
         [DataMember(Name = "basePalleteWeight")]
         public double BasePalleteWeight { get; set; }
 
+        [DataMember(Name = "expirationDays")]
+        public double ExpirationDays { get; set; }
+
         public void Validate()
         {
             var errors = new List<string>();
@@ -36,6 +39,11 @@ namespace Warehouse.Infrastructure.Models
             if (BasePalleteWeight < 0)
             {
                 errors.Add("Вес паллеты должен быть положительным.");
+            }
+
+            if (ExpirationDays < 0)
+            {
+                errors.Add("Количество дней срока годности быть положительным.");
             }
 
             if (errors.Count > 0)

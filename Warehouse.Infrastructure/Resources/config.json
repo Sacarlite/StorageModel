@@ -2,5 +2,6 @@
     "connectionString": "Data Source=warehouse.db",
     "maxPalletGenerationCount": 50,
     "maxBoxGenerationCount": 50,
-    "basePalleteWeight": 50
+    "basePalleteWeight": 50,
+    "expirationDays": 100
 }

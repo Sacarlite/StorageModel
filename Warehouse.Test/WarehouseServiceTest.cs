@@ -2,8 +2,7 @@
 using Warehouse.Application.Service;
 using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
-using Warehouse.Infrastructure.Models;
-using Warehouse.Infrastructure.Service;
+using Warehouse.Test.Step;
 
 namespace Warehouse.Test
 {
@@ -30,10 +29,10 @@ namespace Warehouse.Test
         {
             var pallets = new List<Pallet>
             {
-            CreatePallet(1, new DateTime(2025, 1, 1), 50),
-            CreatePallet(2, new DateTime(2025, 1, 1), 60),
-            CreatePallet(3, new DateTime(2025, 2, 1), 70),
-            CreatePallet(4, null, 40)
+            WarehouseSteps.CreatePallet(1, new DateTime(2025, 1, 1), 50),
+            WarehouseSteps.CreatePallet(2, new DateTime(2025, 1, 1), 60),
+            WarehouseSteps.CreatePallet(3, new DateTime(2025, 2, 1), 70),
+            WarehouseSteps.CreatePallet(4, null, 40)
             };
             _repositoryMock.Setup(r => r.GetAllPallets()).Returns(pallets);
 
@@ -67,11 +66,11 @@ namespace Warehouse.Test
         {
             var pallets = new List<Pallet>
             {
-            CreatePallet(1, new DateTime(2025, 1, 1), 50),
-            CreatePallet(2, new DateTime(2025, 2, 1), 60),
-            CreatePallet(3, new DateTime(2025, 3, 1), 70),
-            CreatePallet(4, new DateTime(2025, 4, 1), 40),
-            CreatePallet(5, new DateTime(2025, 5, 1), 20)
+            WarehouseSteps.CreatePallet(1, new DateTime(2025, 1, 1), 50),
+            WarehouseSteps.CreatePallet(2, new DateTime(2025, 2, 1), 60),
+            WarehouseSteps.CreatePallet(3, new DateTime(2025, 3, 1), 70),
+            WarehouseSteps.CreatePallet(4, new DateTime(2025, 4, 1), 40),
+            WarehouseSteps.CreatePallet(5, new DateTime(2025, 5, 1), 20)
             };
             _repositoryMock.Setup(r => r.GetAllPallets()).Returns(pallets);
 
@@ -91,8 +90,8 @@ namespace Warehouse.Test
         {
             var pallets = new List<Pallet>
             {
-            CreatePallet(1, new DateTime(2025, 1, 1), 50),
-            CreatePallet(2, new DateTime(2025, 2, 1), 60)
+            WarehouseSteps.CreatePallet(1, new DateTime(2025, 1, 1), 50),
+            WarehouseSteps.CreatePallet(2, new DateTime(2025, 2, 1), 60)
             };
             _repositoryMock.Setup(r => r.GetAllPallets()).Returns(pallets);
 
@@ -103,37 +102,7 @@ namespace Warehouse.Test
             Assert.AreEqual(1, result[1].Id, "Паллета с ID=1 должна быть второй (объем 1000).");
         }
 
-        /// <summary>
-        /// Создает паллету с заданными параметрами для тестов.
-        /// </summary>
-        /// <param name="id">Идентификатор паллеты.</param>
-        /// <param name="expirationDate">Срок годности коробки на паллете (если есть).</param>
-        /// <param name="weight">Общий вес паллеты (включая базовый вес 30 кг).</param>
-        /// <param name="volume">Общий объем паллеты (без учета базового объема паллеты).</param>
-        /// <returns>Объект <see cref="Pallet"/> с заданными параметрами.</returns>
-        private Pallet CreatePallet(int id, DateTime? expirationDate, double weight)
-        {
-            var pallet = new Pallet(DataProvider<ConfigModel>.GetConfigData().BasePalleteWeight)
-            {
-                Id = id,
-                Width = id * 100,
-                Height = id * 100,
-                Depth = id * 100
-            };
-            if (expirationDate.HasValue)
-            {
-                pallet.Items.Add(new Box
-                {
-                    Id = id * 10,
-                    Width = 10,
-                    Height = 10,
-                    Depth = 10,
-                    Weight = weight - 30, // Учитываем базовый вес паллеты
-                    ExpirationDateOverride = expirationDate
-                });
-            }
-            return pallet;
-        }
+
     }
 }
 

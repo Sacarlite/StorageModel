@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Newtonsoft.Json.Linq;
 using Warehouse.Domain.Models;
 using Warehouse.Infrastructure.Models;
 using Warehouse.Infrastructure.Service;
@@ -10,10 +11,17 @@ namespace Warehouse.Application.Mappings
         public static void Configure()
         {
 
-            TypeAdapterConfig<BoxDTO, Box>
-                .NewConfig()
-                .Map(dest => dest.ExpirationDateOverride, src => src.ExpirationDateOverride)
-                .Map(dest => dest.ProductionDate, src => src.ProductionDate);
+            TypeAdapterConfig<BoxDTO, Box>.NewConfig()
+               .Map(dest => dest.ExpirationDateOverride, src => src.ExpirationDateOverride)
+               .Map(dest => dest.ProductionDate, src => src.ProductionDate)
+               .AfterMapping((BoxDTO src, Box dest) =>
+               {
+                   if (dest.ExpirationDateOverride == null && dest.ProductionDate.HasValue)
+                   {
+                       dest.ExpirationDateOverride = dest.ProductionDate.Value.AddDays(DataProvider<ConfigModel>.GetConfigData().ExpirationDays);
+                   }
+               });
+
 
             TypeAdapterConfig<PalletDTO, Pallet>
                 .NewConfig()

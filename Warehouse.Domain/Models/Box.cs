@@ -24,7 +24,7 @@ namespace Warehouse.Domain.Models
 
                 if (ProductionDate.HasValue)
                 {
-                    return ExpirationDateResult.FromDate(ProductionDate.Value.AddDays(100));
+                    return ExpirationDateResult.FromDate(ProductionDate.Value);
                 }
 
                 throw new InvalidOperationException("Не указана дата производства или срок годности.");
