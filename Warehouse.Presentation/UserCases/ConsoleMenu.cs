@@ -1,9 +1,11 @@
 ﻿using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
+using Warehouse.Infrastructure.Models;
+using Warehouse.Infrastructure.Service;
 using Warehouse.Presentation.Enums;
-using Warehouse.Presentation.UserCases;
+using Warehouse.Presentation.Service;
 
-namespace Warehouse.Presentation
+namespace Warehouse.Presentation.UserCases
 {
     public class ConsoleMenu
     {
@@ -16,8 +18,8 @@ namespace Warehouse.Presentation
         {
             _storageService = storageService;
             _storageRepository = storageRepository;
-            _palletMenu = new PalletMenu(storageService, storageRepository);
-            _dataGeneratorMenu = new DataGeneratorMenu(storageService, storageRepository);
+            _palletMenu = new PalletMenu(storageRepository);
+            _dataGeneratorMenu = new DataGeneratorMenu(storageRepository);
         }
 
         public void Show()
@@ -40,7 +42,7 @@ namespace Warehouse.Presentation
                 }
 
                 PrintMainMenu();
-                var choice = ReadMainMenuOption();
+                var choice = ValidationService.ReadMainMenuOption();
 
                 switch (choice)
                 {
@@ -49,9 +51,13 @@ namespace Warehouse.Presentation
                         break;
                     case MainMenuOption.SelectPallet:
                         if (_storageRepository.GetAllPallets().Any())
+                        {
                             _palletMenu.ShowPalletMenu();
+                        }
                         else
+                        {
                             Console.WriteLine("Нет паллет для выбора.");
+                        }
                         break;
                     case MainMenuOption.GenerateRandomData:
                         _dataGeneratorMenu.ShowDataGeneratorMenu();
@@ -64,8 +70,6 @@ namespace Warehouse.Presentation
                         break;
                 }
 
-                Console.WriteLine("\nНажмите любую клавишу для продолжения...");
-                Console.ReadKey();
             }
         }
 
@@ -74,12 +78,12 @@ namespace Warehouse.Presentation
             Console.Clear();
             Console.WriteLine("___ Добавление паллеты ___");
 
-            var pallet = new Pallet();
+            var pallet = new Pallet(DataProvider<ConfigModel>.GetConfigData().BasePalleteWeight);
             try
             {
-                pallet.Width = ReadPositiveDouble("Ширина (см): ");
-                pallet.Height = ReadPositiveDouble("Высота (см): ");
-                pallet.Depth = ReadPositiveDouble("Глубина (см): ");
+                pallet.Width = ValidationService.GetPositiveDouble("Ширина (см): ");
+                pallet.Height = ValidationService.GetPositiveDouble("Высота (см): ");
+                pallet.Depth = ValidationService.GetPositiveDouble("Глубина (см): ");
 
                 _storageRepository.AddPallet(pallet);
                 Console.WriteLine($"Паллета добавлена с ID: {pallet.Id}.");
@@ -99,7 +103,7 @@ namespace Warehouse.Presentation
             foreach (var pallet in pallets)
             {
                 Console.WriteLine(
-                    $"| {pallet.Id,-2} | {pallet.Items.Count,-7} | {pallet.ExpirationDate.Date?.ToString("yyyy-MM-dd"),-13} | {pallet.Width,-11:F2} | {pallet.Depth,-12:F2} | {pallet.Weight,-8:F2} | {pallet.Volume,-11:F2} |");
+                    $"| {pallet.Id,-2} | {pallet.Items.Count,-7} | {pallet.ExpirationDate,-13} | {pallet.Width,-11:F2} | {pallet.Depth,-12:F2} | {pallet.Weight,-8:F2} | {pallet.Volume,-11:F2} |");
             }
             Console.WriteLine("-----------------------------------------------------------------------------------");
         }
@@ -114,7 +118,7 @@ namespace Warehouse.Presentation
             foreach (var pallet in topPallets)
             {
                 Console.WriteLine(
-                    $"| {pallet.Id,-2} | {pallet.Items.Count,-7} | {pallet.ExpirationDate.Date?.ToString("yyyy-MM-dd"),-13} | {pallet.Width,-11:F2} | {pallet.Depth,-12:F2} | {pallet.Weight,-8:F2} | {pallet.Volume,-11:F2} |");
+                    $"| {pallet.Id,-2} | {pallet.Items.Count,-7} | {pallet.ExpirationDate,-13} | {pallet.Width,-11:F2} | {pallet.Depth,-12:F2} | {pallet.Weight,-8:F2} | {pallet.Volume,-11:F2} |");
             }
             Console.WriteLine("-----------------------------------------------------------------------------------");
         }
@@ -126,29 +130,6 @@ namespace Warehouse.Presentation
             Console.WriteLine($"{(int)MainMenuOption.SelectPallet}. Выбрать паллету");
             Console.WriteLine($"{(int)MainMenuOption.GenerateRandomData}. Сгенерировать случайные данные");
             Console.WriteLine($"{(int)MainMenuOption.Exit}. Выйти");
-        }
-
-        private MainMenuOption ReadMainMenuOption()
-        {
-            Console.Write("\nВведите номер действия: ");
-            if (int.TryParse(Console.ReadLine(), out int input) && Enum.IsDefined(typeof(MainMenuOption), input))
-            {
-                return (MainMenuOption)input;
-            }
-            return MainMenuOption.None;
-        }
-
-        private double ReadPositiveDouble(string prompt)
-        {
-            while (true)
-            {
-                Console.Write(prompt);
-                if (double.TryParse(Console.ReadLine(), out double value) && value > 0)
-                {
-                    return value;
-                }
-                Console.WriteLine("Введите положительное число.");
-            }
         }
 
     }

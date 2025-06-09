@@ -3,11 +3,11 @@
 
 namespace Warehouse.Domain.Models
 {
-    public class Pallet : IStorageItem, IHasWeight, IHasExpirationDate, IContainer
+    public class Pallet : IStorageItem, IHasExpirationDate, IContainer
     {
         private readonly double _baseWeight;
 
-        public Pallet(double baseWeight = 30.0)
+        public Pallet(double baseWeight)
         {
             _baseWeight = baseWeight;
             Items = new List<Box>();
@@ -19,7 +19,7 @@ namespace Warehouse.Domain.Models
         public double Depth { get; set; }
         public IList<Box> Items { get; set; }
 
-        public void AddItem(IStorageItem item)
+        public void AddItem(Box item)
         {
             if (item is not Box box)
             {

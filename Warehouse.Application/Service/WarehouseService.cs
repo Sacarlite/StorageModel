@@ -23,8 +23,8 @@ namespace Warehouse.Application.Service
         public IEnumerable<Pallet> GetTop3LongestLastingPallets()
         {
             return _repository.GetAllPallets()
-                .Where(p => p.Items.Any())
-                .OrderByDescending(p => p.ExpirationDate.Date)
+                .Where(p => p.ExpirationDate.HasValue)
+                .OrderByDescending(p => p.Items.Max(b => b.ExpirationDate!.Date))
                 .Take(3)
                 .OrderBy(p => p.Volume);
         }

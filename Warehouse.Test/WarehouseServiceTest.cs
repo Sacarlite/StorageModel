@@ -2,6 +2,8 @@
 using Warehouse.Application.Service;
 using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
+using Warehouse.Infrastructure.Models;
+using Warehouse.Infrastructure.Service;
 
 namespace Warehouse.Test
 {
@@ -28,10 +30,10 @@ namespace Warehouse.Test
         {
             var pallets = new List<Pallet>
             {
-            CreatePallet(1, new DateTime(2025, 1, 1), 50, 1000),
-            CreatePallet(2, new DateTime(2025, 1, 1), 60, 2000),
-            CreatePallet(3, new DateTime(2025, 2, 1), 70, 1500),
-            CreatePallet(4, null, 40, 500)
+            CreatePallet(1, new DateTime(2025, 1, 1), 50),
+            CreatePallet(2, new DateTime(2025, 1, 1), 60),
+            CreatePallet(3, new DateTime(2025, 2, 1), 70),
+            CreatePallet(4, null, 40)
             };
             _repositoryMock.Setup(r => r.GetAllPallets()).Returns(pallets);
 
@@ -65,20 +67,20 @@ namespace Warehouse.Test
         {
             var pallets = new List<Pallet>
             {
-            CreatePallet(1, new DateTime(2025, 1, 1), 50, 1000),
-            CreatePallet(2, new DateTime(2025, 2, 1), 60, 500),
-            CreatePallet(3, new DateTime(2025, 3, 1), 70, 1500),
-            CreatePallet(4, new DateTime(2025, 4, 1), 40, 2000),
-            CreatePallet(5, new DateTime(2025, 1, 1), 0, 0)
+            CreatePallet(1, new DateTime(2025, 1, 1), 50),
+            CreatePallet(2, new DateTime(2025, 2, 1), 60),
+            CreatePallet(3, new DateTime(2025, 3, 1), 70),
+            CreatePallet(4, new DateTime(2025, 4, 1), 40),
+            CreatePallet(5, new DateTime(2025, 5, 1), 20)
             };
             _repositoryMock.Setup(r => r.GetAllPallets()).Returns(pallets);
 
             var result = _warehouseService.GetTop3LongestLastingPallets().ToList();
 
             Assert.AreEqual(3, result.Count, "Ожидалось 3 паллеты в результате.");
-            Assert.AreEqual(2, result[0].Id, "Паллета с ID=2 должна быть первой (объем 500).");
-            Assert.AreEqual(1, result[1].Id, "Паллета с ID=1 должна быть второй (объем 1000).");
-            Assert.AreEqual(3, result[2].Id, "Паллета с ID=3 должна быть третьей (объем 1500).");
+            Assert.AreEqual(3, result[0].Id, "Паллета с ID=2 должна быть первой (объем 500).");
+            Assert.AreEqual(4, result[1].Id, "Паллета с ID=1 должна быть второй (объем 1000).");
+            Assert.AreEqual(5, result[2].Id, "Паллета с ID=3 должна быть третьей (объем 1500).");
         }
 
         /// <summary>
@@ -89,8 +91,8 @@ namespace Warehouse.Test
         {
             var pallets = new List<Pallet>
             {
-            CreatePallet(1, new DateTime(2025, 1, 1), 50, 1000),
-            CreatePallet(2, new DateTime(2025, 2, 1), 60, 500)
+            CreatePallet(1, new DateTime(2025, 1, 1), 50),
+            CreatePallet(2, new DateTime(2025, 2, 1), 60)
             };
             _repositoryMock.Setup(r => r.GetAllPallets()).Returns(pallets);
 
@@ -109,14 +111,14 @@ namespace Warehouse.Test
         /// <param name="weight">Общий вес паллеты (включая базовый вес 30 кг).</param>
         /// <param name="volume">Общий объем паллеты (без учета базового объема паллеты).</param>
         /// <returns>Объект <see cref="Pallet"/> с заданными параметрами.</returns>
-        private Pallet CreatePallet(int id, DateTime? expirationDate, double weight, double volume)
+        private Pallet CreatePallet(int id, DateTime? expirationDate, double weight)
         {
-            var pallet = new Pallet
+            var pallet = new Pallet(DataProvider<ConfigModel>.GetConfigData().BasePalleteWeight)
             {
                 Id = id,
-                Width = 100,
-                Height = 100,
-                Depth = 100
+                Width = id * 100,
+                Height = id * 100,
+                Depth = id * 100
             };
             if (expirationDate.HasValue)
             {

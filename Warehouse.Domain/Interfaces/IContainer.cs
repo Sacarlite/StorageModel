@@ -5,6 +5,6 @@ namespace Warehouse.Domain.Interfaces
     public interface IContainer
     {
         IList<Box> Items { get; set; }
-        void AddItem(IStorageItem item);
+        void AddItem(Box item);
     }
 }

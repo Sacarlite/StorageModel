@@ -1,4 +1,5 @@
 ﻿using Warehouse.Domain.Models;
+using Warehouse.Infrastructure.Models;
 
 namespace Warehouse.Infrastructure.Service
 {
@@ -18,7 +19,7 @@ namespace Warehouse.Infrastructure.Service
             var pallets = new List<Pallet>();
             for (int i = 0; i < palletCount; i++)
             {
-                var pallet = new Pallet
+                var pallet = new Pallet(DataProvider<ConfigModel>.GetConfigData().BasePalleteWeight)
                 {
                     Width = 80 + _random.NextDouble() * 40,
                     Height = 80 + _random.NextDouble() * 40,

@@ -1,33 +1,45 @@
 ﻿using Warehouse.Domain.Interfaces;
 using Warehouse.Domain.Models;
+using Warehouse.Infrastructure.Models;
 using Warehouse.Infrastructure.Service;
 using Warehouse.Presentation.Enums;
+using Warehouse.Presentation.Service;
 
 namespace Warehouse.Presentation.UserCases
 {
     public class DataGeneratorMenu
     {
-        private readonly IStorageService _storageService;
         private readonly IStorageRepository _storageRepository;
         private readonly TestDataGenerator _dataGenerator;
-
-        public DataGeneratorMenu(IStorageService storageService, IStorageRepository storageRepository)
+        private int _maxPalletGenerationCount;
+        private int _maxBoxGenerationCount;
+        public DataGeneratorMenu(IStorageRepository storageRepository)
         {
-            _storageService = storageService;
             _storageRepository = storageRepository;
             _dataGenerator = new TestDataGenerator();
         }
 
         public void ShowDataGeneratorMenu()
         {
+            try
+            {
+                _maxPalletGenerationCount = DataProvider<ConfigModel>.GetConfigData().MaxPalletGenerationCount;
+                _maxBoxGenerationCount = DataProvider<ConfigModel>.GetConfigData().MaxBoxGenerationCount;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"При считывании конфигурационных данных генератора произошла ошибка {ex.Message}\n");
+                return;
+            }
+
             var generatedPallets = new List<Pallet>();
             while (true)
             {
                 Console.Clear();
                 Console.WriteLine("___ Генерация случайных данных ___\n");
 
-                var palletCount = ReadPositiveInt("Введите количество паллет (0-100): ", 0, 100);
-                var maxBoxesPerPallet = ReadPositiveInt("Введите максимальное количество коробок на паллете (0-50): ", 0, 50);
+                var palletCount = ValidationService.GetPositiveIntInRange($"Введите количество паллет (0-{_maxPalletGenerationCount}): ", 0, _maxPalletGenerationCount);
+                var maxBoxesPerPallet = ValidationService.GetPositiveIntInRange($"Введите максимальное количество коробок на паллете (0-{_maxBoxGenerationCount}): ", 0, _maxBoxGenerationCount);
 
                 generatedPallets = _dataGenerator.GeneratePallets(palletCount, maxBoxesPerPallet);
                 Console.WriteLine("\nСгенерированные данные:");
@@ -45,7 +57,7 @@ namespace Warehouse.Presentation.UserCases
                 }
 
                 PrintDataGeneratorMenu();
-                var choice = ReadDataGeneratorOption();
+                var choice = ValidationService.ReadDataGeneratorOption();
 
                 switch (choice)
                 {
@@ -85,7 +97,7 @@ namespace Warehouse.Presentation.UserCases
                 foreach (var box in pallet.Items.OfType<Box>())
                 {
                     Console.WriteLine(
-                        $"| {box.Width,-11:F2} | {box.Height,-11:F2} | {box.Depth,-12:F2} | {box.Weight,-8:F2} | {box.Volume,-11:F2} | {box.ExpirationDate.Date?.ToString("yyyy-MM-dd"),-13} |");
+                        $"| {box.Width,-11:F2} | {box.Height,-11:F2} | {box.Depth,-12:F2} | {box.Weight,-8:F2} | {box.Volume,-11:F2} | {box.ExpirationDate,-13} |");
                 }
                 Console.WriteLine("-----------------------------------------------------------------------------------");
             }
@@ -97,29 +109,6 @@ namespace Warehouse.Presentation.UserCases
             Console.WriteLine($"{(int)GenerateDataOption.SaveToDatabase}. Сохранить в базу данных");
             Console.WriteLine($"{(int)GenerateDataOption.Regenerate}. Повторить генерацию");
             Console.WriteLine($"{(int)GenerateDataOption.Exit}. Выйти");
-        }
-
-        private GenerateDataOption ReadDataGeneratorOption()
-        {
-            Console.Write("\nВведите номер действия: ");
-            if (int.TryParse(Console.ReadLine(), out int input) && Enum.IsDefined(typeof(GenerateDataOption), input))
-            {
-                return (GenerateDataOption)input;
-            }
-            return GenerateDataOption.None;
-        }
-
-        private int ReadPositiveInt(string prompt, int min, int max)
-        {
-            while (true)
-            {
-                Console.Write(prompt);
-                if (int.TryParse(Console.ReadLine(), out int value) && value >= min && value <= max)
-                {
-                    return value;
-                }
-                Console.WriteLine($"Введите число от {min} до {max}.");
-            }
         }
 
         private void SaveGeneratedData(List<Pallet> generatedPallets)

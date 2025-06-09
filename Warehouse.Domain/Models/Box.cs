@@ -2,7 +2,6 @@
 
 namespace Warehouse.Domain.Models
 {
-
     public class Box : IStorageItem, IHasWeight, IHasExpirationDate
     {
         public int Id { get; set; }
@@ -22,16 +21,17 @@ namespace Warehouse.Domain.Models
                 {
                     return ExpirationDateResult.FromDate(ExpirationDateOverride.Value);
                 }
+
                 if (ProductionDate.HasValue)
                 {
                     return ExpirationDateResult.FromDate(ProductionDate.Value.AddDays(100));
                 }
+
                 throw new InvalidOperationException("Не указана дата производства или срок годности.");
             }
         }
 
         public double Volume => Width * Height * Depth;
-
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Warehouse.Domain.Models;
 using Warehouse.Infrastructure.Models;
+using Warehouse.Infrastructure.Service;
 
 namespace Warehouse.Application.Mappings
 {
@@ -16,7 +17,7 @@ namespace Warehouse.Application.Mappings
 
             TypeAdapterConfig<PalletDTO, Pallet>
                 .NewConfig()
-                .ConstructUsing(src => new Pallet(30.0))
+                .ConstructUsing(src => new Pallet(DataProvider<ConfigModel>.GetConfigData().BasePalleteWeight))
                 .Map(dest => dest.Width, src => src.Width)
                 .Map(dest => dest.Height, src => src.Height)
                 .Map(dest => dest.Depth, src => src.Depth)
@@ -36,17 +37,4 @@ namespace Warehouse.Application.Mappings
         }
 
     }
-
-    public static class BoxMapper
-    {
-        public static ExpirationDateResult MapExpirationDate(BoxDTO src)
-        {
-            if (src.ExpirationDateOverride.HasValue)
-                return ExpirationDateResult.FromDate(src.ExpirationDateOverride.Value);
-            if (src.ProductionDate.HasValue)
-                return ExpirationDateResult.FromDate(src.ProductionDate.Value.AddDays(100));
-            return ExpirationDateResult.Empty;
-        }
-    }
-
 }

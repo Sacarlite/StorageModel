@@ -5,31 +5,40 @@ using Warehouse.Application.Service;
 using Warehouse.Domain.Interfaces;
 using Warehouse.Infrastructure.Models;
 using Warehouse.Infrastructure.Repositories;
-using Warehouse.Presentation;
+using Warehouse.Infrastructure.Service;
+using Warehouse.Presentation.UserCases;
 class Program
 {
     static void Main()
     {
         var services = new ServiceCollection();
 
-        MappingConfig.Configure();
-
-        services.AddDbContext<WarehouseDbContext>(options =>
-            options.UseSqlite("Data Source=warehouse.db"));
-
-        services.AddScoped<IStorageRepository, StorageRepository>();
-        services.AddScoped<IStorageService, WarehouseService>();
-        services.AddSingleton<ConsoleMenu>();
-
-        var serviceProvider = services.BuildServiceProvider();
-        using (var scope = serviceProvider.CreateScope())
+        try
         {
-            var context = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-        }
-        var menu = serviceProvider.GetRequiredService<ConsoleMenu>();
 
-        menu.Show();
+            MappingConfig.Configure();
+            services.AddDbContext<WarehouseDbContext>(options =>
+            options.UseSqlite(DataProvider<ConfigModel>.GetConfigData().ConnectionString));
+            services.AddScoped<IStorageRepository, StorageRepository>();
+            services.AddScoped<IStorageService, WarehouseService>();
+            services.AddSingleton<ConsoleMenu>();
+
+            var serviceProvider = services.BuildServiceProvider();
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
+
+            var menu = serviceProvider.GetRequiredService<ConsoleMenu>();
+
+            menu.Show();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"При считывании конфигурационных данных БД произошла ошибка \n {ex.Message}\n");
+            return;
+        }
     }
 }
